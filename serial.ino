@@ -1,27 +1,29 @@
-const int analogInPin = A0;
-volatile long revolutions = 0;
+#define READ_PIN    A0
+#define TRESHOLD    450
+#define LOOP_DELAY  10
+#define BAUD_RATE   250000
+
+bool state = HIGH;
+int lowRead;
 
 void setup() {
-  Serial.begin(250000);
+  Serial.begin(BAUD_RATE);
   while (!Serial);
   Serial.println("ready");
 }
 
-int c = 0;
-#define SIZE 3
-int readings[SIZE] = {};
-
 void loop() {
-  int sensorValue = analogRead(analogInPin);
-  readings[c] = sensorValue;
-  c++;
-  if (c == SIZE) {
-    c = 0;
-    int v = 0;
-    for (int k = 0; k < SIZE; k++) v += readings[k];
-    v /= SIZE;
-    Serial.println(v);
-    delay(100);
+  int sensorValue = analogRead(READ_PIN);
+  if (sensorValue <= TRESHOLD) {
+    state = LOW;
+    lowRead = sensorValue;
+  } else if (state == LOW) {
+    state = HIGH;
+
+    char buff[200];
+    sprintf(buff, "%d at %lu", lowRead, millis());
+    Serial.println(buff);
   }
+  delay(LOOP_DELAY);
 }
 
