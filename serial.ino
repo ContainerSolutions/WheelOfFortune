@@ -1,35 +1,27 @@
 const int analogInPin = A0;
-const int digitalOutPin = 13;
-int sensorValue = 0;
-
 volatile long revolutions = 0;
 
 void setup() {
   Serial.begin(250000);
   while (!Serial);
-  pinMode(digitalOutPin, OUTPUT);
-
-  //  attachInterrupt(digitalPinToInterrupt(2), ISR, mode);
-
   Serial.println("ready");
 }
 
-
-
-
+int c = 0;
+#define SIZE 3
+int readings[SIZE] = {};
 
 void loop() {
-  sensorValue = analogRead(analogInPin);
-  if (sensorValue < 505) { // notice that the normal value of the sensor is 510
-    digitalWrite(digitalOutPin, HIGH);
-  } else {
-    digitalWrite(digitalOutPin, LOW);
+  int sensorValue = analogRead(analogInPin);
+  readings[c] = sensorValue;
+  c++;
+  if (c == SIZE) {
+    c = 0;
+    int v = 0;
+    for (int k = 0; k < SIZE; k++) v += readings[k];
+    v /= SIZE;
+    Serial.println(v);
+    delay(100);
   }
-
-  Serial.println(sensorValue);
-
-
-
-  delay(10);
 }
 
