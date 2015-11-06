@@ -21,7 +21,7 @@ void loop() {
     state = HIGH;
 
     char buff[200];
-    sprintf(buff, "%d at %lu", lowRead, millis());
+    sprintf(buff, "%3d at %lu", lowRead, millis());
     Serial.println(buff);
   }
   delay(LOOP_DELAY);
