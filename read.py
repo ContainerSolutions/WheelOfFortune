@@ -26,9 +26,9 @@ def aprint(msg):
 
 def worker():
     try:
-        r = requests.get('http://default/tick', timeout=2)
+        r = requests.get('http://default/tick', timeout=1)
     except:
-        aprint("Could not send request to cluster: %s" % r)
+        aprint("Could not send request to cluster")
 
 
 def read_stuff(ser):
