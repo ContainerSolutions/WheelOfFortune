@@ -4,6 +4,8 @@ import serial
 import sys
 import time
 import datetime
+import requests
+import threading
 
 BAUD_RATE = 250000
 DEVICES = [
@@ -18,22 +20,28 @@ class NotConnectedException(Exception):
 
 
 def aprint(msg):
-    print(
-        "   %s >>> %s" %
-        (datetime.datetime.now().strftime("%H:%M:%S.%f"), msg))
+    print("   %s >>> %s" %
+          (datetime.datetime.now().strftime("%H:%M:%S.%f"), msg))
+
+
+def worker():
+    try:
+        r = requests.get('http://default/tick', timeout=2)
+    except:
+        aprint("Could not send request to cluster: %s" % r)
 
 
 def read_stuff(ser):
-    # values = []
     while True:
-        # try:
         val = ser.readline().strip()
         aprint(val)
-        # except ValueError:
-        #   print("ssss")
-        # if len(values) >= 1:
-        #   print(values)
-        #   values = []
+
+        values = val.split(' at ')
+        if len(values) == 2:
+            peak, time = values
+            for i in range(5):
+                t = threading.Thread(target=worker)
+                t.start()
 
 
 def connect():
