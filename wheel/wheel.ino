@@ -1,5 +1,5 @@
 #define READ_PIN    A0
-#define TRESHOLD    450
+#define THRESHOLD    450
 #define LOOP_DELAY  10
 #define BAUD_RATE   250000
 
@@ -9,11 +9,12 @@ int lowRead;
 void setup() {
   Serial.begin(BAUD_RATE);
   while (!Serial);
-  Serial.println("ready");
+  //  Serial.println("ready");
 }
 
 void loop() {
   int sensorValue = analogRead(READ_PIN);
+  /*
   if (sensorValue <= TRESHOLD) {
     state = LOW;
     lowRead = sensorValue;
@@ -21,9 +22,18 @@ void loop() {
     state = HIGH;
 
     char buff[200];
-    sprintf(buff, "%3d at %lu", lowRead, millis());
+    sprintf(buff, "%3d", lowRead);
     Serial.println(buff);
   }
-  delay(LOOP_DELAY);
+  
+  delay(LOOP_DELAY);*/
+
+  if ((sensorValue <= THRESHOLD && state == HIGH)
+           || (sensorValue > THRESHOLD && state == LOW)) {
+    state = !state;
+    if (state == HIGH) {
+      Serial.println("click");
+    }
+  }
 }
 

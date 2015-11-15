@@ -24,24 +24,26 @@ def aprint(msg):
           (datetime.datetime.now().strftime("%H:%M:%S.%f"), msg))
 
 
-def worker():
+def worker(sec):
     try:
-        r = requests.get('http://default/tick', timeout=1)
+        #r = requests.get('http://default/' + sec, timeout=1)
+        print("requesting sector ", sec)
     except:
         aprint("Could not send request to cluster")
 
 
 def read_stuff(ser):
+    sector = 0
     while True:
         val = ser.readline().strip()
-        aprint(val)
 
-        values = val.split(' at ')
-        if len(values) == 2:
-            peak, time = values
-            for i in range(5):
-                t = threading.Thread(target=worker)
-                t.start()
+        sector += 1
+        sector %= 4
+        print(val, "sector", sector)
+        # peak, time = values
+        # for i in range(5):
+        t = threading.Thread(target=worker(sector))
+        t.start()
 
 
 def connect():
