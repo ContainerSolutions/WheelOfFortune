@@ -1,11 +1,24 @@
-#! /usr/bin/env python
+#!/usr/bin/env python3
+
+import eventlet
+eventlet.monkey_patch()
+
+from time import sleep
+from threading import Thread
+from flask import Flask
+from flask_socketio import SocketIO, emit
 
 import serial
 import sys
-import time
 import datetime
-import requests
 import threading
+
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret!'
+socketio = SocketIO(app, async_mode='eventlet')
+thread = None
+
 
 BAUD_RATE = 250000
 DEVICES = [
@@ -24,24 +37,14 @@ def aprint(msg):
           (datetime.datetime.now().strftime("%H:%M:%S.%f"), msg))
 
 
-def worker():
-    try:
-        r = requests.get('http://default/tick', timeout=1)
-    except:
-        aprint("Could not send request to cluster")
-
-
 def read_stuff(ser):
     while True:
         val = ser.readline().strip()
         aprint(val)
-
-        values = val.split(' at ')
-        if len(values) == 2:
-            peak, time = values
-            for i in range(5):
-                t = threading.Thread(target=worker)
-                t.start()
+        socketio.emit('change colors',
+                      {'data': 'toe maar'},
+                      namespace='/test', broadCast = True)
+        sleep(0.1)
 
 
 def connect():
@@ -63,19 +66,25 @@ def connection_loop():
             print("Arduino not connected, sleep(%d)..." %
                   SLEEP_TIME_BETWEEN_CONNECTION_ATTEMPTS)
             sys.stdout.flush()
-            time.sleep(SLEEP_TIME_BETWEEN_CONNECTION_ATTEMPTS)
+            sleep(SLEEP_TIME_BETWEEN_CONNECTION_ATTEMPTS)
             pass
+
+def background_thread():
+    try:
+        ser = connection_loop()
+        read_stuff(ser)
+    except serial.serialutil.SerialException:
+        print("Arduino was disconnected. Check cable.")
+        pass
+    except KeyboardInterrupt:
+        print("\nBye bye\n")
+        sys.exit(0)
 
 if __name__ == "__main__":
     print("Wheel of Fortune ready! Press ctrl-c to stop.\n")
 
-    while True:
-        try:
-            ser = connection_loop()
-            read_stuff(ser)
-        except serial.serialutil.SerialException:
-            print("Arduino was disconnected. Check cable.")
-            pass
-        except KeyboardInterrupt:
-            print("\nBye bye\n")
-            sys.exit(0)
+    if thread is None:
+        thread = Thread(target=background_thread)
+        thread.daemon = True
+        thread.start()
+    socketio.run(app, debug=True)
