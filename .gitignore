@@ -1,2 +1,4 @@
+.idea/
+*iml
 nginx-conf.d/default.conf
 
