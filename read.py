@@ -6,12 +6,10 @@ import time
 import datetime
 import requests
 import threading
+import glob
+import os
 
 BAUD_RATE = 250000
-DEVICES = [
-    '/dev/cu.usbmodem1421',
-    '/dev/cu.usbmodem1411'
-]
 SLEEP_TIME_BETWEEN_CONNECTION_ATTEMPTS = 3
 
 
@@ -45,7 +43,8 @@ def read_stuff(ser):
 
 
 def connect():
-    for device in DEVICES:
+    os.chdir("/dev")
+    for device in glob.glob("cu.usbmodem*"):
         try:
             ser = serial.Serial(device, BAUD_RATE)
             print("Found Arduino at device %s" % device)
